@@ -1,0 +1,6 @@
+[submodule "Solar-Battery-Meter-Scraper"]
+	path = Solar-Battery-Meter-Scraper
+	url = https://github.com/aruncs31s/Solar-Battery-Meter-Scraper
+[submodule "Solar-Battery-Monitor"]
+	path = Solar-Battery-Monitor
+	url = https://github.com/aruncs31s/Solar-Battery-Monitor
