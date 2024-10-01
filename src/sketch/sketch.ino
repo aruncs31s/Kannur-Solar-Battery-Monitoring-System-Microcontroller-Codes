@@ -90,13 +90,16 @@ void loop() {
               client.print("{");
               client.print("\"battery_voltage\":");
               client.print(new_data.battery_voltage);
+              client.print(",");
+              client.print("led_relayState:");
+              client.print(new_data.led_relayState);
               client.println("}");
               client.println();
-            if (header.indexOf("GET /D4/on") >= 0) {
+            if (header.indexOf("GET /data?on") >= 0) {
               Serial.println("GPIO 02 on");
               new_data.led_relayState = true;
               digitalWrite(LED_BUILTIN, HIGH);
-            } else if(header.indexOf("GET /D4/off") >= 0) {
+            } else if(header.indexOf("GET /data?on") >= 0) {
               Serial.println("GPIO D4 off");
               new_data.led_relayState = false;
               digitalWrite(LED_BUILTIN, LOW);
@@ -115,7 +118,7 @@ void loop() {
               client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
               client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
               client.println(".button2 {background-color: #555555;}</style></head>");
-              client.println("<body><h1>Signal Power Monitoring</h1>");
+              client.println("<body><h1>Solar Battery Monitor</h1>");
               client.println("<h3> Station IP :  " + String(WiFi.localIP().toString()) + "</h3>");
               client.println("<div class=\"row\">");
               client.println("<div class=\"column\">");
@@ -126,9 +129,9 @@ void loop() {
               client.println("<p>BUILTIN LED  - State " + String(new_data.led_relayState) + "</p>");
               // led status 
               if (new_data.led_relayState==false) {
-              client.println("<p><a href=\"/D4/on\"><button class=\"button\">ON</button></a></p>");
+              client.println("<p><a href=\"/data?on\"><button class=\"button\">ON</button></a></p>");
               } else {
-              client.println("<p><a href=\"/D4/off\"><button class=\"button button2\">OFF</button></a></p>");
+              client.println("<p><a href=\"/data?off\"><button class=\"button button2\">OFF</button></a></p>");
               } 
               client.println("</div> ");
               client.println("</div> ");
@@ -210,6 +213,8 @@ void loop() {
       }
     }
   }
+
+  header = "";
   client.stop();
   reconnect();
   debug();
