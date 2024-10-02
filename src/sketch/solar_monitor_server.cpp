@@ -47,10 +47,6 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
                         "onclick=\"toggleLED()\">") +
                  (new_data.led_relayState == "off" ? "ON" : "OFF") +
                  "</button></p>");
-  // client.println("<p><button class=\"button\" id='led_relayButton'
-  // onclick=\"toggleLED()\">" + (led_relayState == "off" ? "ON" : "OFF") +
-  // "</button></p>");
-
   client.println("<p id='temperature'>Temperature: " +
                  String(new_data.temperature) + " (degree) C</p>");
   client.println("<p id='humidity'>Humidity: " + String(new_data.humidity) +
@@ -72,7 +68,7 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("      document.getElementById('led_relayState').innerHTML = "
                  "led_relayState;");
   client.println("      document.getElementById('led_relayButton').innerHTML "
-                 "= led_relayState === 'off' ? 'ON' : 'OFF';");
+                 "= new_data.led_relayState === 'off' ? 'ON' : 'OFF';");
   client.println("    }");
   client.println("  };");
   client.println("  xhr.send();");
@@ -97,58 +93,6 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("  xhr.open('GET', '/data', true);");
   client.println("  xhr.send();");
   client.println("}, 3000);");
-
-  // Chart Temperature
-  client.println("var chartT = new Highcharts.Chart({");
-  client.println(" chart: {");
-  client.println(" renderTo:");
-  client.println("   'chart-temperature'");
-  client.println(" }");
-  client.println("   , title : {text : 'Temperature'},");
-  client.println("             series : [ {showInLegend : false, "
-                 "data : []} ],");
-  client.println("                      plotOptions");
-  client.println("       : {");
-  client.println("         line : {animation : false, dataLabels : "
-                 "{enabled : true}},");
-  client.println("         series : {color : '#059e8a'}");
-  client.println("       },");
-  client.println("         xAxis : {");
-  client.println("           type : 'datetime',");
-  client.println("           dateTimeLabelFormats : {second : '%H:%M:%S'}");
-  client.println("         },");
-  client.println("                 yAxis : {");
-  client.println("                   title : {text : 'Temperature "
-                 "(Celsius)'}");
-  client.println("                   // title: { text: "
-                 "'Temperature (Fahrenheit)' }");
-  client.println("                 },");
-  client.println("                         credits : {");
-  client.println("   enabled:");
-  client.println("     false");
-  client.println("   }");
-  client.println(" });");
-
-  client.println(" setInterval(function() {");
-  client.println("   var xhttp = new XMLHttpRequest();");
-  client.println("   xhttp.onreadystatechange = function() {");
-  client.println("     if (this.readyState == 4 && this.status == 200) {");
-  client.println("       var data = JSON.parse(this.responseText);");
-  client.println("       var x = (new Date()).getTime(),");
-  client.println("           y = parseFloat(data.temperature);");
-  client.println("       if (chartT.series[0].data.length > 4000) {");
-  client.println(
-      "         chartT.series[0].addPoint([ x, y ], true, true, true);");
-  client.println("       } else {");
-  client.println(
-      "         chartT.series[0].addPoint([ x, y ], true, false, true);");
-  client.println("       }");
-  client.println("     }");
-  client.println("   };");
-  client.println("   xhttp.open(\"GET\", \"/data\", true);");
-  client.println("   xhttp.send();");
-  client.println(" }, 1000);");
-
   // Battery Voltage
   client.println("var chartB = new Highcharts.Chart({");
   client.println(" chart: {");
@@ -252,6 +196,60 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("   xhttp.open(\"GET\", \"/data\", true);");
   client.println("   xhttp.send();");
   client.println(" }, 1000);");
+
+#if defined(HUMID_TEMP_SENSING)
+
+  // Chart Temperature
+  client.println("var chartT = new Highcharts.Chart({");
+  client.println(" chart: {");
+  client.println(" renderTo:");
+  client.println("   'chart-temperature'");
+  client.println(" }");
+  client.println("   , title : {text : 'Temperature'},");
+  client.println("             series : [ {showInLegend : false, "
+                 "data : []} ],");
+  client.println("                      plotOptions");
+  client.println("       : {");
+  client.println("         line : {animation : false, dataLabels : "
+                 "{enabled : true}},");
+  client.println("         series : {color : '#059e8a'}");
+  client.println("       },");
+  client.println("         xAxis : {");
+  client.println("           type : 'datetime',");
+  client.println("           dateTimeLabelFormats : {second : '%H:%M:%S'}");
+  client.println("         },");
+  client.println("                 yAxis : {");
+  client.println("                   title : {text : 'Temperature "
+                 "(Celsius)'}");
+  client.println("                   // title: { text: "
+                 "'Temperature (Fahrenheit)' }");
+  client.println("                 },");
+  client.println("                         credits : {");
+  client.println("   enabled:");
+  client.println("     false");
+  client.println("   }");
+  client.println(" });");
+
+  client.println(" setInterval(function() {");
+  client.println("   var xhttp = new XMLHttpRequest();");
+  client.println("   xhttp.onreadystatechange = function() {");
+  client.println("     if (this.readyState == 4 && this.status == 200) {");
+  client.println("       var data = JSON.parse(this.responseText);");
+  client.println("       var x = (new Date()).getTime(),");
+  client.println("           y = parseFloat(data.temperature);");
+  client.println("       if (chartT.series[0].data.length > 4000) {");
+  client.println(
+      "         chartT.series[0].addPoint([ x, y ], true, true, true);");
+  client.println("       } else {");
+  client.println(
+      "         chartT.series[0].addPoint([ x, y ], true, false, true);");
+  client.println("       }");
+  client.println("     }");
+  client.println("   };");
+  client.println("   xhttp.open(\"GET\", \"/data\", true);");
+  client.println("   xhttp.send();");
+  client.println(" }, 1000);");
+
   // Humidity
   client.println("var chartH = new Highcharts.Chart({");
   client.println(" chart: {");
@@ -304,12 +302,18 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("   xhttp.open(\"GET\", \"/data\", true);");
   client.println("   xhttp.send();");
   client.println(" }, 1000);");
+#endif
   client.println("</script>");
   client.println("</body></html>");
   client.println();
 }
 void SolarMonitorServer::update_json_response(WiFiClient &client,
                                               Data &new_data) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: application/json");
+  client.println("Connection: close");
+  client.println();
+  client.println();
   client.print("{");
   client.print("\"temperature\":");
   client.print(new_data.temperature);
@@ -327,3 +331,8 @@ void SolarMonitorServer::update_json_response(WiFiClient &client,
   client.print("\"" + new_data.led_relayState + "\"");
   client.println("}");
 }
+
+void SolarMonitorServer::turn_on_off_relay(bool _state) {
+  digitalWrite(_led_relayPin, _state);
+}
+void SolarMonitorServer::init_relay() { pinMode(_led_relayPin, OUTPUT); }
