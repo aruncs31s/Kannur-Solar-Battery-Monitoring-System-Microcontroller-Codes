@@ -42,8 +42,6 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Do something about this
 
-String led_relayState = "off";
-
 WiFiServer server(80);
 
 String header;
@@ -55,6 +53,7 @@ unsigned long previousTime = 0;
 // Data struct
 Data new_data;
 
+String led_relayState = "off";
 // Solar Monitor Server Object
 
 SolarMonitorServer Solar_monitor_server;
@@ -68,13 +67,14 @@ BatteryMonitor Battery_monitor(battery_voltage_pin);
 void setup() {
   Serial.begin(9600);
   // Get static IP
+  new_data.led_relayState = "off";
   Solar_monitor_server.init_relay();
 #if defined(STATIC_IP)
   Wifi_configs.get_static_ip();
 #endif
   Wifi_configs.connect();
 #if defined(Light_SENSING)
-  
+
   // Initialize Light Sensor
   Light_Sensor.begin();
 #endif
@@ -107,7 +107,6 @@ void update_reading() {
 
 void loop() {
   update_reading();
-
 
 #if defined(LCD_DSPLAY)
   lcd.setCursor(2, 0);
@@ -143,6 +142,18 @@ void loop() {
               Serial.println("Serving Json Response");
 #endif
               Solar_monitor_server.update_json_response(client, new_data);
+
+              if (header.indexOf("GET /data?=on") >= 0) {
+                Serial.println("GPIO D4 on");
+                // header = "GET /data";
+                digitalWrite(LED_BUILTIN, HIGH);
+                Solar_monitor_server.turn_on_off_relay(1);
+              } else if (header.indexOf("GET /data?=off") >= 0) {
+                Serial.println("GPIO D4 off");
+                // header = "GET /data";
+                digitalWrite(LED_BUILTIN, LOW);
+                Solar_monitor_server.turn_on_off_relay(0);
+              }
               break;
             } else {
 #if defined(DEBUG_EVERYTHING)

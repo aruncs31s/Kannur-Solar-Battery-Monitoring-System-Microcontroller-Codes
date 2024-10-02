@@ -330,7 +330,7 @@ void SolarMonitorServer::update_json_response(WiFiClient &client,
   client.print(new_data.battery_voltage);
   client.print(",");
   client.print("\"led_relayState\":");
-  client.print("\"" + new_data.led_relayState + "\"");
+  client.print("\"" + String(new_data.led_relayState) + "\"");
   client.println("}");
 }
 
