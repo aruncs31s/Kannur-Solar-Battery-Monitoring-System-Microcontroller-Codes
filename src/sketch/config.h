@@ -1,11 +1,17 @@
 #ifndef __CONFIG_H_
 #define __CONFIG_H_
-#include <stdbool.h>
-
+#include "modules.h"
 typedef struct Data {
-  double rain_volume;
+#if defined(LIGHT_SENSING)
+  float light_sensor_value;
+#endif
+#if defined(HUMID_TEMP_SENSING)
+  float humidity;
+  float temperature;
+#endif
   float battery_voltage;
-  bool led_relayState;
+  bool led_relayStatus;
+
 } Data;
 
 #endif //!__CONFIG_H_
