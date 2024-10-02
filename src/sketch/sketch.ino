@@ -147,6 +147,14 @@ void loop() {
           currentLine += c;
         }
       }
+      }
+    header = "";
+    client.stop();
+    Serial.println("Client disconnected.");
+    Serial.println("");
+      }
+}
+
 void check_wifi() {
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
