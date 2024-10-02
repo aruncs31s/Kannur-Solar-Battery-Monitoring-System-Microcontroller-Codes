@@ -1,11 +1,12 @@
 #ifndef __CONFIG_H_
 #define __CONFIG_H_
-#include <stdbool.h>
-
+#include <Arduino.h>
 typedef struct Data {
-  double rain_volume;
+  float light_sensor_value;
+  float humidity;
+  float temperature;
   float battery_voltage;
-  bool led_relayState;
+  String led_relayState;
 } Data;
 
 #endif //!__CONFIG_H_
