@@ -39,7 +39,11 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("<div id=\"chart-light\" class=\"container\"></div>");
   client.println("</div>");
   client.println("</div> ");
-
+  client.println("<div class=\"row\">");
+  client.println("<div class=\"column\">");
+  client.println("<div id=\"chart-rain_volume\" class=\"container \"></div>");
+  client.println("</div> ");
+  client.println("</div> ");
   client.println(
       "<p>Street Light - Currently <span id='led_relayButton_State'>" +
       String(new_data.led_relayState) + "</span></p>");
@@ -56,6 +60,8 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
                  String(new_data.light_sensor_value) + "</p>");
   client.println("<p id='battery_voltage'>Battery Voltage: " +
                  String(new_data.battery_voltage) + "</p>");
+  client.println("<p id='rain_volume'>Current Rain: " +
+                 String(new_data.rain_volume) + " mm </p>");
   client.println("<script>");
   client.println("let led_relayState = \"" +
                  String(new_data.led_relayState ? "on" : "off") + "\";");
@@ -95,6 +101,59 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("  xhr.open('GET', '/data', true);");
   client.println("  xhr.send();");
   client.println("}, 3000);");
+  // Rain Volume
+  client.println("var chartR = new Highcharts.Chart({");
+  client.println(" chart: {");
+  client.println(" renderTo:'chart-rain_volume'");
+
+  client.println(" }");
+  client.println("   , title : {text : 'Rain Volume'},");
+  client.println("             series : [ {showInLegend : false, "
+                 "data : []} ],");
+  client.println("                      plotOptions");
+  client.println("       : {");
+  client.println("         line : {animation : false, dataLabels : "
+                 "{enabled : true}},");
+  client.println("         series : {color : '#ffff00'}");
+  client.println("       },");
+  client.println("         xAxis : {");
+  client.println("           type : 'datetime',");
+  client.println("           dateTimeLabelFormats : {second : '%H:%M:%S'}");
+  client.println("         },");
+  client.println("                 yAxis : {");
+  client.println("                   title : {text : 'Volume "
+                 "(mm)'}");
+  client.println("                 },");
+  client.println("                         credits : {");
+  client.println("   enabled:");
+  client.println("     false");
+  client.println("   }");
+  client.println(" });");
+
+  client.println(" setInterval(function() {");
+  client.println("   var xhttp = new XMLHttpRequest();");
+  client.println("   xhttp.onreadystatechange = function() {");
+  client.println("     if (this.readyState == 4 && this.status == 200) {");
+  // Get Json response
+  client.println("       var data = JSON.parse(this.responseText);");
+  // Get current time
+  client.println("       var x = (new Date()).getTime(),");
+  // Get battery_voltage
+  client.println("           y = parseFloat(data.rain_volume);");
+  client.println("       if (chartR.series[0].data.length > 4000) {");
+  client.println(
+      "         chartR.series[0].addPoint([ x, y ], true, true, true);");
+
+  client.println("       } else {");
+  client.println(
+      "         chartR.series[0].addPoint([ x, y ], true, false, true);");
+  client.println("       }");
+  client.println("     }");
+  client.println("   };");
+  client.println("   xhttp.open(\"GET\", \"/data\", true);");
+  client.println("   xhttp.send();");
+  client.println(" }, 1000);");
+
   // Battery Voltage
   client.println("var chartB = new Highcharts.Chart({");
   client.println(" chart: {");
@@ -331,6 +390,9 @@ void SolarMonitorServer::update_json_response(WiFiClient &client,
   client.print(",");
   client.print("\"led_relayState\":");
   client.print("\"" + new_data.led_relayState + "\"");
+  client.print(",");
+  client.print("\"rain_volume\":");
+  client.print(new_data.rain_volume);
   client.println("}");
 }
 

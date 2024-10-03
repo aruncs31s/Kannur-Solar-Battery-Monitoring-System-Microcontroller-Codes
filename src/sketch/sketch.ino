@@ -8,7 +8,7 @@
 #if defined(ESP8266)
 // Wifi.h will not work for ESP8266
 #include <ESP8266WiFi.h>
-#else
+#elif defined(ESP32)
 // For ESP32
 #include <WiFi.h>
 #endif
@@ -36,6 +36,12 @@ lightSensor Light_Sensor;
 #include "LiquidCrystal_I2C.h"
 // LCD Display object
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+#endif
+
+#if defined(RAIN_SENSING)
+#include "weather_station.h"
+
+weatherStation Weather_Station;
 #endif
 
 // All the function Definition Will Go here
@@ -77,12 +83,17 @@ void setup() {
 
   // Initialize Light Sensor
   Light_Sensor.begin();
+
 #endif
 #if defined(HUMID_TEMP_SENSING)
   // Initialze Humid Temp Sensor
   Humid_Temp_Sensor.begin();
 #endif
   // Start Server
+#if defined(RAIN_SENSING) || defined(WIND_DIRECTION_SENSING) ||                \
+    defined(WIND_SPEED_SENSING)
+  Weather_Station.init();
+#endif
   server.begin();
 
 #if defined(LCD_DSPLAY)
@@ -94,6 +105,8 @@ void setup() {
 }
 
 void update_reading() {
+
+  new_data.battery_voltage = Battery_monitor.get_voltage();
 #if defined(HUMID_TEMP_SENSING)
   Humid_Temp_Sensor.get_readings();
   new_data.humidity = Humid_Temp_Sensor.humidity;
@@ -102,12 +115,18 @@ void update_reading() {
 #if defined(LIGHT_SENSING)
   new_data.light_sensor_value = Light_Sensor.get_value();
 #endif
-  new_data.battery_voltage = Battery_monitor.get_voltage();
+#if defined(WIND_SPEED_SENSING)
+  new_data.wind_speed = Weather_Station.get_speed();
+#endif
+#if defined(WIND_DIRECTION_SENSING)
+ new_data.wind_direction = Weather_Station.get_direction();
+#endif
 }
 
 void loop() {
   update_reading();
-
+  new_data.rain_volume = Weather_Station.get_rain();
+  Serial.println("Rain Volument =" + String(new_data.rain_volume));
 #if defined(LCD_DSPLAY)
   lcd.setCursor(2, 0);
   lcd.print(WiFi.localIP());
@@ -146,12 +165,12 @@ void loop() {
               if (header.indexOf("GET /data?=on") >= 0) {
                 Serial.println("GPIO D4 on");
                 // header = "GET /data";
-                digitalWrite(LED_BUILTIN, HIGH);
+                // digitalWrite(LED_BUILTIN, HIGH);
                 Solar_monitor_server.turn_on_off_relay(1);
               } else if (header.indexOf("GET /data?=off") >= 0) {
                 Serial.println("GPIO D4 off");
                 // header = "GET /data";
-                digitalWrite(LED_BUILTIN, LOW);
+                // digitalWrite(LED_BUILTIN, LOW);
                 Solar_monitor_server.turn_on_off_relay(0);
               }
               break;
