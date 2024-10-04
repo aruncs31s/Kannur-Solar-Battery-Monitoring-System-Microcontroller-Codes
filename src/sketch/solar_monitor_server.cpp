@@ -20,7 +20,7 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
       "text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
   client.println(".button2 {background-color: #555555;}</style></head>");
 
-  client.println("<body><h1>Signal Power Monitoring</h1>");
+  client.println("<body><h1>Kerala Smart City</h1>");
   client.println("<h3> Station IP :  " + String(WiFi.localIP().toString()) +
                  "</h3>");
   client.println("<div class=\"row\">");
@@ -226,7 +226,7 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("         },");
   client.println("                 yAxis : {");
   client.println("                   title : {text : 'Voltage "
-                 "(Celsius)'}");
+                 "(lux)'}");
   client.println("                 },");
   client.println("                         credits : {");
   client.println("   enabled:");
@@ -332,7 +332,7 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("         },");
   client.println("                 yAxis : {");
   client.println("                   title : {text : 'Humidity "
-                 "(Celsius)'}");
+                 "(%)'}");
   client.println("                 },");
   client.println("                         credits : {");
   client.println("   enabled:");

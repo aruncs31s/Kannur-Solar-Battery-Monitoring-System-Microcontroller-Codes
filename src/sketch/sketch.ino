@@ -166,12 +166,12 @@ void loop() {
                 Serial.println("GPIO D4 on");
                 // header = "GET /data";
                 // digitalWrite(LED_BUILTIN, HIGH);
-                Solar_monitor_server.turn_on_off_relay(1);
+                Solar_monitor_server.turn_on_off_relay(0);
               } else if (header.indexOf("GET /data?=off") >= 0) {
                 Serial.println("GPIO D4 off");
                 // header = "GET /data";
                 // digitalWrite(LED_BUILTIN, LOW);
-                Solar_monitor_server.turn_on_off_relay(0);
+                Solar_monitor_server.turn_on_off_relay(1);
               }
               break;
             } else {
