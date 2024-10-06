@@ -105,7 +105,6 @@ void setup() {
 }
 
 void update_reading() {
-
   new_data.battery_voltage = Battery_monitor.get_voltage();
 #if defined(HUMID_TEMP_SENSING)
   Humid_Temp_Sensor.get_readings();

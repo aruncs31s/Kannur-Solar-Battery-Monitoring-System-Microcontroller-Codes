@@ -19,7 +19,7 @@
 #if defined(ONEPLUS_AP) && defined(STATIC_IP)
 #define WIFI_SSID "802.11"
 #define WIFI_PASSWORD "12345678p"
-#define STATIC_IP_ADDRESS 192, 168, 67, 50
+#define STATIC_IP_ADDRESS 192, 168, 48, 50
 #define STATIC_IP_GATEWAY 192, 168, 67, 1
 #define STATIC_IP_SUBNET 255, 255, 255, 0
 #endif
@@ -66,8 +66,10 @@ typedef struct Data {
 #define TIMEOUT_MS 2000
 
 // Battery Voltage Meter
-#define R1 1  // 1K
-#define R2 10 // 10K
+// #define R1 1  // 1K
+// #define R2 10 // 10K
+#define R1 1
+#define R2 4.7
 #define V_REF 3.3
 #if defined(ESP8266)
 const uint8_t battery_voltage_pin = A0;
@@ -80,8 +82,10 @@ const int PIN_RAINFALL = 35;
 
 #if defined(ESP8266)
 #define ADC_MAX 1023
+#define ADC_OFFSET 0
 #elif defined(ESP32)
 #define ADC_MAX 4095
+#define ADC_OFFSET 134
 #else
 #error                                                                         \
     "Please define which the max of your adc 1023 for 10 bit adc and 4095 for 12 bit adc"
