@@ -11,5 +11,4 @@ public:
 private:
   uint8_t _pin;
 };
-
 #endif // __BATTERY_MONITOR_H__
