@@ -70,6 +70,8 @@ void setup() {
 }
 
 void update_reading() {
+
+  Battery_monitor.get_adc_voltage();
   new_data.battery_voltage = Battery_monitor.get_voltage();
 }
 
@@ -143,4 +145,11 @@ void loop() {
     Serial.println("Client disconnected.");
 #endif
   }
+#if defined(DEBUG_EVERYTHING)
+  Serial.print("Local IP ");
+  Serial.println(WiFi.localIP());
+#endif
+
+// Serial.println("ADC Voltage = "+String(Battery_monitor.get_adc_voltage())); 
+// delay(2000);
 }

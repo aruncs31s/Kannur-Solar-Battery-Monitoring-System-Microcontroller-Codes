@@ -5,15 +5,17 @@
 
 // Here every features should be defined
 
-#define ONEPLUS_AP
+#define GCEK_AP
+// #define ONEPLUS_AP
 // #define LIGHT_SENSING
 // #define HUMID_TEMP_SENSING
 #define STATIC_IP
 #define DEBUG_EVERYTHING
-#define LCD_DSPLAY
+// #define LCD_DSPLAY
 // #define RAIN_SENSING
 // #define WIND_DIRECTION_SENSING
 // #define WIND_SPEED_SENSING
+#define RELAY
 
 // Wifi Credentials
 
@@ -25,20 +27,25 @@
 #define STATIC_IP_SUBNET 255, 255, 255, 0
 #endif
 
-#if defined(GCEK_AP) && defined(STATIC_IP)
+#if defined(GCEK_AP)
 #define WIFI_SSID "GCEK-WiFi"
 #define WIFI_PASSWORD ""
 #define STATIC_IP_ADDRESS 172, 16, 32, 9
 #define STATIC_IP_GATEWAY 172, 16, 32, 1
 #define STATIC_IP_SUBNET 255, 255, 252, 0
+
 #endif
 
 // Pin Configuration
 
+#if defined(RELAY)
+
 #if defined(ESP8266)
-const uint8_t led_relayPin = D2;
+// TODO: Change it to something more approp**
+const uint8_t led_relayPin = D2; //
 #elif defined(ESP32)
 const uint8_t led_relayPin = 4;
+#endif
 #endif
 
 typedef struct Data {
@@ -77,9 +84,15 @@ const uint8_t battery_voltage_pin = A0;
 #elif defined(ESP32)
 const uint8_t battery_voltage_pin = 36;
 #endif
-const int PIN_WIND_DIRECTION = 32;
+#if defined(WEWIND_SPEED_SENSING)
 const int PIN_WIND_SPEED = 34;
+#endif
+#if defined(WIND_DIRECTION_SENSING)
+const int PIN_WIND_DIRECTION = 32;
+#endif
+#if defined(PIN_RAINFALL)
 const int PIN_RAINFALL = 35;
+#endif
 
 #if defined(ESP8266)
 #define ADC_MAX 1023
