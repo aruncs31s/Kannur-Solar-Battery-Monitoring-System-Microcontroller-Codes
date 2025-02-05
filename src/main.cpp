@@ -143,4 +143,5 @@ void loop() {
     Serial.println("Client disconnected.");
 #endif
   }
+  delay(100);
 }

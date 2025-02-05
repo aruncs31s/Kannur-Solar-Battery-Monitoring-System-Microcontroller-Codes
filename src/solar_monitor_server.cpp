@@ -1,4 +1,6 @@
 #include "solar_monitor_server.h"
+#include "config.h"
+#include "pins_arduino.h"
 
 void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("HTTP/1.1 200 OK");
@@ -41,7 +43,8 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
                  String(new_data.led_relayState ? "on" : "off") + "\";");
   client.println("function toggleLED() {");
   client.println("var xhr = new XMLHttpRequest();");
-  client.println("xhr.open('GET', '/data?=' + (led_relayState === 'off' ? 'on' : 'off'), true);");
+  client.println("xhr.open('GET', '/data?=' + (led_relayState === 'off' ? 'on' "
+                 ": 'off'), true);");
   client.println("xhr.onreadystatechange = function() {");
   client.println("if (xhr.readyState == 4 && xhr.status == 200) {");
   client.println("led_relayState = led_relayState === 'off' ? 'on' : 'off';");
@@ -111,7 +114,9 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   // Get Json response
   client.println("       var data = JSON.parse(this.responseText);");
   // Get current time
-  client.println("       var x = (new Date()).getTime(),");
+
+  client.println(
+      "var x = Date.now() + (5 * 60 * 60 * 1000) + (30 * 60 * 1000),");
   // Get battery_voltage
   client.println("           y = parseFloat(data.battery_voltage);");
   client.println("       if (chartB.series[0].data.length > 4000) {");
@@ -150,5 +155,6 @@ void SolarMonitorServer::update_json_response(WiFiClient &client,
 
 void SolarMonitorServer::turn_on_off_relay(bool _state) {
   digitalWrite(_led_relayPin, _state);
+  digitalWrite(LED_BUILTIN, _state);
 }
 void SolarMonitorServer::init_relay() { pinMode(_led_relayPin, OUTPUT); }
