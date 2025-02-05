@@ -23,9 +23,9 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("<body><h1>Kerala Smart City</h1>");
   client.println("<h3> Station IP :  " + String(WiFi.localIP().toString()) +
                  "</h3>");
-  client.println("<div class=\"row\">");
   client.println("<div id=\"chart-volt\" class=\"container \"></div>");
-  client.println("</div> ");
+
+  // client.println("</div> ");
   client.println(
       "<p>Street Light - Currently <span id='led_relayButton_State'>" +
       String(new_data.led_relayState) + "</span></p>");
@@ -41,15 +41,14 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
                  String(new_data.led_relayState ? "on" : "off") + "\";");
   client.println("function toggleLED() {");
   client.println("var xhr = new XMLHttpRequest();");
-  client.println("xhr.open('GET', '/data?=' + (led_relayState === 'off' "
-                 "?'on' : 'off'), true);");
+  client.println("xhr.open('GET', '/data?=' + (led_relayState === 'off' ? 'on' : 'off'), true);");
   client.println("xhr.onreadystatechange = function() {");
   client.println("if (xhr.readyState == 4 && xhr.status == 200) {");
   client.println("led_relayState = led_relayState === 'off' ? 'on' : 'off';");
   client.println("document.getElementById('led_relayButton_State').innerHTML = "
                  "led_relayState;");
   client.println("document.getElementById('led_relayButton').innerHTML = "
-                 "(led_relayState === 'on' ? 'OFF' : 'ON');");
+                 "(led_relayState ===  'on' ? 'OFF' : 'ON');");
   client.println("    }");
   client.println("  };");
   client.println("  xhr.send();");
@@ -68,10 +67,10 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("  };");
   client.println("  xhr.open('GET', '/data', true);");
   client.println("  xhr.send();");
-  client.println("}, 3000);");
+  client.println("}, 15000);");
   // Battery Voltage
-  client.println("var chartB = new Highcharts.Chart({");
-  client.println(" chart: {");
+  client.println("var chartB = new Highcharts.Chart");
+  client.println("({chart: {");
   client.println(" renderTo:'chart-volt'");
 
   client.println(" }");
@@ -84,9 +83,16 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
                  "{enabled : true}},");
   client.println("         series : {color : '#00ffff'}");
   client.println("       },");
+  // client.println("time : { timezone: 'Asia/Kolkata}, ");
+  // time: {
+  // timezone: 'America/New_York'
+  // },
   client.println("         xAxis : {");
   client.println("           type : 'datetime',");
   client.println("           dateTimeLabelFormats : {second : '%H:%M:%S'}");
+  client.println("       ,");
+
+  client.println("           timezoneOffset: +330");
   client.println("         },");
   client.println("                 yAxis : {");
   client.println("                   title : {text : 'Voltage "
