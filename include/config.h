@@ -23,6 +23,7 @@
 #define WIFI_SSID "pi_wifi"
 #define WIFI_PASSWORD "12345678"
 
+#define SERVER_URI  "http://192.168.120.112:5000/api/data"
 #if defined(STATIC_IP)
 #define STATIC_IP_ADDRESS 192, 168, 72, 50
 #define STATIC_IP_GATEWAY 192, 168, 72, 1

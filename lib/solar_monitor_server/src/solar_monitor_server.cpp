@@ -1,6 +1,9 @@
 #include "solar_monitor_server.h"
 #include "config.h"
 #include "pins_arduino.h"
+#include <ESP8266HTTPClient.h>
+#include <ArduinoJson.h>
+
 
 void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("HTTP/1.1 200 OK");
@@ -137,8 +140,7 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("</body></html>");
   client.println();
 }
-void SolarMonitorServer::update_json_response(WiFiClient &client,
-                                              Data &new_data) {
+void SolarMonitorServer::update_json_response(WiFiClient &client, Data &new_data) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: application/json");
   client.println("Connection: close");
@@ -158,3 +160,36 @@ void SolarMonitorServer::turn_on_off_relay(bool _state) {
   digitalWrite(LED_BUILTIN, _state);
 }
 void SolarMonitorServer::init_relay() { pinMode(_led_relayPin, OUTPUT); }
+
+
+void SolarMonitorServer::sendDataToServer(Data &data) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    WiFiClient client;
+    
+    http.begin(client,SERVER_URI);
+    http.addHeader("Content-Type", "application/json");
+    // Create JSON document
+    StaticJsonDocument<200> doc;
+
+    Serial.println(data.battery_voltage);
+    doc["battery_voltage"] = data.battery_voltage;
+
+    
+    String jsonString;
+    serializeJson(doc, jsonString);
+    
+
+    int httpResponseCode = http.POST(jsonString);
+    
+    if (httpResponseCode > 0) {
+      String response = http.getString();
+      Serial.println("HTTP Response code: " + String(httpResponseCode));
+      Serial.println(response);
+    } else {
+      Serial.println("Error on sending POST: " + String(httpResponseCode));
+    }
+    
+    http.end();
+  }
+}
