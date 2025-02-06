@@ -1,147 +1,53 @@
 /*
- * Time : 13:31
- * Date : 2024-10-02
- */
+* V0.0.3 
+* Start Date: 06-01-2025
+*/
 
+#include <Arduino.h>
 #include "config.h"
-
-#if defined(ESP8266)
-// Wifi.h will not work for ESP8266
+#include <ESP8266HTTPClient.h>
+#include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
-#elif defined(ESP32)
-// For ESP32
-#include <WiFi.h>
-#endif
 
-#include "battery_monitor.h"
-#include "solar_monitor_server.h"
-#include "wifi_configs.h"
-
-// LCD Display
-#if defined(LCD_DSPLAY)
-#include "LiquidCrystal_I2C.h"
-// LCD Display object
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-#endif
-
-// All the function Definition Will Go here
-
-// Do something about this
-
-WiFiServer server(80);
-
-String header;
-// For wifi Server
-
-unsigned long currentTime = millis();
-unsigned long previousTime = 0;
-
-// Data struct
-Data new_data;
-
-String led_relayState = "off";
-// Solar Monitor Server Object
-
-SolarMonitorServer Solar_monitor_server;
-
-WiFiConfigs Wifi_configs;
-
-BatteryMonitor Battery_monitor(battery_voltage_pin);
-
-// Reconnect if lost connection
-
-void setup() {
-  Serial.begin(9600);
-  // Get static IP
-  new_data.led_relayState = "off";
-  Solar_monitor_server.init_relay();
-#if defined(STATIC_IP)
-  Wifi_configs.get_static_ip();
-#endif
-  Wifi_configs.connect();
-  server.begin();
-
-#if defined(LCD_DSPLAY)
-  // Iniitlize the lcd
-  lcd.init();
-  lcd.clear();
-  lcd.backlight();
-#endif
-}
-
-void update_reading() {
-  new_data.battery_voltage = Battery_monitor.get_voltage();
-}
-
-void loop() {
-  update_reading();
-#if defined(LCD_DSPLAY)
-  lcd.setCursor(2, 0);
-  lcd.print(WiFi.localIP());
-#endif
-  WiFiClient client = server.available();
-
-#if defined(LCD_DSPLAY)
-  if (new_data.battery_voltage != Battery_monitor.get_voltage()) {
-    lcd.setCursor(2, 1); // Set cursor to character 2 on line 0
-    lcd.print("Volt = ");
-    lcd.print(new_data.battery_voltage);
-    lcd.print(" V");
-  }
-#endif
-
-  if (client) {
-    currentTime = millis();
-    previousTime = currentTime;
-    Serial.println("New Client.");
-    String currentLine = "";
-    while (client.connected() && currentTime - previousTime <= TIMEOUT_MS) {
-      currentTime = millis();
-      if (client.available()) {
-        char c = client.read();
-        Serial.write(c);
-        header += c;
-        if (c == '\n') {
-          if (currentLine.length() == 0) {
-            if (header.indexOf("GET /data") >= 0 ||
-                header.indexOf("GET /data/?=") >= 0) {
-#if defined(DEBUG_EVERYTHING)
-              Serial.println("Serving Json Response");
-#endif
-              Solar_monitor_server.update_json_response(client, new_data);
-
-              if (header.indexOf("GET /data?=on") >= 0) {
-                Serial.println("GPIO D4 on");
-                // header = "GET /data";
-                // digitalWrite(LED_BUILTIN, HIGH);
-                Solar_monitor_server.turn_on_off_relay(0);
-              } else if (header.indexOf("GET /data?=off") >= 0) {
-                Serial.println("GPIO D4 off");
-                // header = "GET /data";
-                // digitalWrite(LED_BUILTIN, LOW);
-                Solar_monitor_server.turn_on_off_relay(1);
-              }
-              break;
-            } else {
-#if defined(DEBUG_EVERYTHING)
-              Serial.println("Serving HTML");
-#endif
-              Solar_monitor_server.present_website(client, new_data);
-              break;
-            }
-          } else {
-            currentLine = "";
-          }
-        } else if (c != '\r') {
-          currentLine += c;
-        }
-      }
+void sendDataToServer(Data &data) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    WiFiClient client;
+    
+    // Replace with your server's IP and port
+    http.begin(client, "http://your_server_ip:5000/api/data");
+    http.addHeader("Content-Type", "application/json");
+    
+    // Create JSON document
+    StaticJsonDocument<200> doc;
+    // doc["temperature"] = data.temperature;
+    // doc["humidity"] = data.humidity;
+    // doc["light_sensor_value"] = data.light_sensor_value;
+    doc["battery_voltage"] = data.battery_voltage;
+    // doc["led_relayState"] = data.led_relayState;
+    // doc["rain_volume"] = data.rain_volume;
+    
+    String jsonString;
+    serializeJson(doc, jsonString);
+    
+    // Send POST request
+    int httpResponseCode = http.POST(jsonString);
+    
+    if (httpResponseCode > 0) {
+      String response = http.getString();
+      Serial.println("HTTP Response code: " + String(httpResponseCode));
+      Serial.println(response);
+    } else {
+      Serial.println("Error on sending POST: " + String(httpResponseCode));
     }
-    header = "";
-    client.stop();
-#if defined(DEBUG_EVERYTHING)
-    Serial.println("Client disconnected.");
-#endif
+    
+    http.end();
   }
-  delay(100);
+}
+void setup(){
+    Serial.begin(BAUD_RATE);
+}
+void loop(){
+    Serial.println("Hi");
+    delay(1000);
 }

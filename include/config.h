@@ -15,6 +15,8 @@
 // #define WIND_DIRECTION_SENSING
 // #define WIND_SPEED_SENSING
 
+#define BAUD_RATE 9600
+
 // Wifi Credentials
 
 #if defined(ONEPLUS_AP)
