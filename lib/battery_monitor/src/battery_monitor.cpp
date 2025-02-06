@@ -1,5 +1,5 @@
 #include "battery_monitor.h"
-#include "config.h"
+
 float BatteryMonitor::get_voltage() {
   // Read the voltage from the pin
   uint16_t raw = analogRead(_pin);
