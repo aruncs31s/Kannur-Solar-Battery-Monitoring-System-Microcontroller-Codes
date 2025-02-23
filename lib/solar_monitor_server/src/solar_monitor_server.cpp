@@ -143,8 +143,8 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
 void SolarMonitorServer::update_json_response(WiFiClient &client, Data &new_data) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: application/json");
+  client.println("Access-Control-Allow-Origin: *");  // Add this line to allow CORS
   client.println("Connection: close");
-  client.println();
   client.println();
   client.print("{");
   client.print("\"battery_voltage\":");
@@ -167,7 +167,7 @@ void SolarMonitorServer::sendDataToServer(Data &data) {
     HTTPClient http;
     WiFiClient client;
     
-    http.begin(client,SERVER_URI);
+    http.begin(client, SERVER_URI);
     http.addHeader("Content-Type", "application/json");
     // Create JSON document
     StaticJsonDocument<200> doc;
@@ -175,10 +175,8 @@ void SolarMonitorServer::sendDataToServer(Data &data) {
     Serial.println(data.battery_voltage);
     doc["battery_voltage"] = data.battery_voltage;
 
-    
     String jsonString;
     serializeJson(doc, jsonString);
-    
 
     int httpResponseCode = http.POST(jsonString);
     

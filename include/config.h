@@ -9,6 +9,7 @@
 // #define LIGHT_SENSING
 // #define HUMID_TEMP_SENSING
 // #define STATIC_IP
+#define DEBUG
 #define DEBUG_EVERYTHING
 #define LCD_DSPLAY
 // #define RAIN_SENSING
@@ -16,6 +17,7 @@
 // #define WIND_SPEED_SENSING
 
 #define BAUD_RATE 9600
+#define P_DELAY 1000
 
 // Wifi Credentials
 
