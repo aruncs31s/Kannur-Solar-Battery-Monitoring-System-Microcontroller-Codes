@@ -31,6 +31,7 @@ void WiFiConfigs::reconnect() {
   }
 }
 
+#if defined(STATIC_IP)
 void WiFiConfigs::get_static_ip() {
   IPAddress local_IP(STATIC_IP_ADDRESS);
   IPAddress gateway(STATIC_IP_GATEWAY);
@@ -39,3 +40,4 @@ void WiFiConfigs::get_static_ip() {
   IPAddress secondaryDNS(8, 8, 8, 8);
   WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS);
 }
+#endif

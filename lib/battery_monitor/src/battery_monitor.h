@@ -1,8 +1,7 @@
 #ifndef __BATTERY_MONITOR_H__
 #define __BATTERY_MONITOR_H__
-
-#include <cstdint>
-#include <cstdio>
+#include <Arduino.h>
+#include "config.h"
 class BatteryMonitor {
 public:
   BatteryMonitor(uint8_t pin) : _pin(pin) {}

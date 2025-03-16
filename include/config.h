@@ -6,22 +6,26 @@
 // Here every features should be defined
 
 #define ONEPLUS_AP
-#define LIGHT_SENSING
-#define HUMID_TEMP_SENSING
-#define STATIC_IP
+// #define LIGHT_SENSING
+// #define HUMID_TEMP_SENSING
+// #define STATIC_IP
 #define DEBUG_EVERYTHING
-#define LCD_DSPLAY
-#define RAIN_SENSING
-#define WIND_DIRECTION_SENSING
-#define WIND_SPEED_SENSING
+// #define LCD_DSPLAY
+// #define RAIN_SENSING
+// #define WIND_DIRECTION_SENSING
+// #define WIND_SPEED_SENSING
+
 // Wifi Credentials
 
-#if defined(ONEPLUS_AP) && defined(STATIC_IP)
-#define WIFI_SSID "802.11"
-#define WIFI_PASSWORD "12345678p"
-#define STATIC_IP_ADDRESS 192, 168, 48, 50
-#define STATIC_IP_GATEWAY 192, 168, 67, 1
+#if defined(ONEPLUS_AP)
+#define WIFI_SSID "pi_wifi"
+#define WIFI_PASSWORD "12345678"
+
+#if defined(STATIC_IP)
+#define STATIC_IP_ADDRESS 192, 168, 72, 50
+#define STATIC_IP_GATEWAY 192, 168, 72, 1
 #define STATIC_IP_SUBNET 255, 255, 255, 0
+#endif
 #endif
 
 #if defined(GCEK_AP) && defined(STATIC_IP)
@@ -35,7 +39,7 @@
 // Pin Configuration
 
 #if defined(ESP8266)
-const uint8_t led_relayPin = D4;
+const uint8_t led_relayPin = D2;
 #elif defined(ESP32)
 const uint8_t led_relayPin = 4;
 #endif
