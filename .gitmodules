@@ -1,9 +1,3 @@
-[submodule "Solar-Battery-Meter-Scraper"]
-	path = Solar-Battery-Meter-Scraper
-	url = https://github.com/aruncs31s/Solar-Battery-Meter-Scraper
-[submodule "Solar-Battery-Monitor"]
-	path = Solar-Battery-Monitor
-	url = https://github.com/aruncs31s/Solar-Battery-Monitor
 [submodule "Kannur-Solar-Battery-Monitoring-System-Desing-KiCad"]
 	path = Kannur-Solar-Battery-Monitoring-System-Desing-KiCad
 	url = https://github.com/aruncs31s/Kannur-Solar-Battery-Monitoring-System-Desing-KiCad
