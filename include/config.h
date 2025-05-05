@@ -18,7 +18,7 @@
 // Wifi Credentials
 
 #if defined(ONEPLUS_AP)
-#define WIFI_SSID "pi_wifi"
+#define WIFI_SSID "ABCD"
 #define WIFI_PASSWORD "12345678"
 
 #if defined(STATIC_IP)
