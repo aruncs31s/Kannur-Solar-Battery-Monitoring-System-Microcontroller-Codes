@@ -10,7 +10,7 @@
 // #define HUMID_TEMP_SENSING
 // #define STATIC_IP
 #define DEBUG_EVERYTHING
-// #define LCD_DSPLAY
+#define LCD_DSPLAY
 // #define RAIN_SENSING
 // #define WIND_DIRECTION_SENSING
 // #define WIND_SPEED_SENSING

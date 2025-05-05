@@ -23,12 +23,12 @@ void WiFiConfigs::connect() {
 }
 
 void WiFiConfigs::reconnect() {
-  while ((WiFi.status()) != WL_CONNECTED) {
-    Serial.println("Reconnecting .");
-    WiFi.disconnect();
-    WiFi.reconnect();
-    delay(5000);
-  }
+  // while ((WiFi.status()) != WL_CONNECTED) {
+  //   Serial.println("Reconnecting .");
+  //   WiFi.disconnect();
+  //   WiFi.reconnect();
+  //   delay(5000);
+  // }
 }
 
 #if defined(STATIC_IP)

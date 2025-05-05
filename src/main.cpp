@@ -1,6 +1,6 @@
 /*
  * Time : 13:31
- * Date : 2024-10-02
+ * Date : 2025-03-17
  */
 
 #include "config.h"
@@ -24,10 +24,6 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 #endif
 
-// All the function Definition Will Go here
-
-// Do something about this
-
 WiFiServer server(80);
 
 String header;
@@ -38,19 +34,14 @@ unsigned long previousTime = 0;
 
 // Data struct
 Data new_data;
-
 String led_relayState = "off";
-// Solar Monitor Server Object
-
 SolarMonitorServer Solar_monitor_server;
-
 WiFiConfigs Wifi_configs;
-
 BatteryMonitor Battery_monitor(battery_voltage_pin);
 
-// Reconnect if lost connection
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
   // Get static IP
   new_data.led_relayState = "off";
@@ -69,11 +60,13 @@ void setup() {
 #endif
 }
 
-void update_reading() {
+void update_reading()
+{
   new_data.battery_voltage = Battery_monitor.get_voltage();
 }
 
-void loop() {
+void loop()
+{
   update_reading();
 #if defined(LCD_DSPLAY)
   lcd.setCursor(2, 0);
@@ -82,7 +75,8 @@ void loop() {
   WiFiClient client = server.available();
 
 #if defined(LCD_DSPLAY)
-  if (new_data.battery_voltage != Battery_monitor.get_voltage()) {
+  if (new_data.battery_voltage != Battery_monitor.get_voltage())
+  {
     lcd.setCursor(2, 1); // Set cursor to character 2 on line 0
     lcd.print("Volt = ");
     lcd.print(new_data.battery_voltage);
@@ -90,49 +84,64 @@ void loop() {
   }
 #endif
 
-  if (client) {
+  if (client)
+  {
     currentTime = millis();
     previousTime = currentTime;
     Serial.println("New Client.");
     String currentLine = "";
-    while (client.connected() && currentTime - previousTime <= TIMEOUT_MS) {
+    while (client.connected() && currentTime - previousTime <= TIMEOUT_MS)
+    {
       currentTime = millis();
-      if (client.available()) {
+      if (client.available())
+      {
         char c = client.read();
         Serial.write(c);
         header += c;
-        if (c == '\n') {
-          if (currentLine.length() == 0) {
+        if (c == '\n')
+        {
+          if (currentLine.length() == 0)
+          {
             if (header.indexOf("GET /data") >= 0 ||
-                header.indexOf("GET /data/?=") >= 0) {
+                header.indexOf("GET /data/?=") >= 0)
+            {
 #if defined(DEBUG_EVERYTHING)
               Serial.println("Serving Json Response");
 #endif
               Solar_monitor_server.update_json_response(client, new_data);
 
-              if (header.indexOf("GET /data?=on") >= 0) {
+              if (header.indexOf("GET /data?=on") >= 0)
+              {
                 Serial.println("GPIO D4 on");
                 // header = "GET /data";
                 // digitalWrite(LED_BUILTIN, HIGH);
                 Solar_monitor_server.turn_on_off_relay(0);
-              } else if (header.indexOf("GET /data?=off") >= 0) {
+              }
+              else if (header.indexOf("GET /data?=off") >= 0)
+              {
                 Serial.println("GPIO D4 off");
                 // header = "GET /data";
                 // digitalWrite(LED_BUILTIN, LOW);
                 Solar_monitor_server.turn_on_off_relay(1);
               }
               break;
-            } else {
+            }
+            else
+            {
 #if defined(DEBUG_EVERYTHING)
               Serial.println("Serving HTML");
 #endif
               Solar_monitor_server.present_website(client, new_data);
               break;
             }
-          } else {
+          }
+          else
+          {
             currentLine = "";
           }
-        } else if (c != '\r') {
+        }
+        else if (c != '\r')
+        {
           currentLine += c;
         }
       }
