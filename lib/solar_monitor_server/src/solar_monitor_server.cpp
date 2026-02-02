@@ -27,7 +27,6 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
                  "</h3>");
   client.println("<div id=\"chart-volt\" class=\"container \"></div>");
 
-  // client.println("</div> ");
   client.println(
       "<p>Street Light - Currently <span id='led_relayButton_State'>" +
       String(new_data.led_relayState) + "</span></p>");
@@ -86,10 +85,6 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
                  "{enabled : true}},");
   client.println("         series : {color : '#00ffff'}");
   client.println("       },");
-  // client.println("time : { timezone: 'Asia/Kolkata}, ");
-  // time: {
-  // timezone: 'America/New_York'
-  // },
   client.println("         xAxis : {");
   client.println("           type : 'datetime',");
   client.println("           dateTimeLabelFormats : {second : '%H:%M:%S'}");
@@ -137,8 +132,10 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("</body></html>");
   client.println();
 }
-void SolarMonitorServer::update_json_response(WiFiClient &client,
-                                              Data &new_data) {
+void SolarMonitorServer::update_json_response(
+    WiFiClient &client,
+    Data &new_data
+) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: application/json");
   client.println("Connection: close");

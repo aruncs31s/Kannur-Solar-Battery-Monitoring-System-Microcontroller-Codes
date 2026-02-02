@@ -15,6 +15,14 @@
 // #define WIND_DIRECTION_SENSING
 // #define WIND_SPEED_SENSING
 
+// Go Backend Configuration
+#define USE_GO_BACKEND
+#define BACKEND_HOST "10.71.76.103"
+#define BACKEND_PORT 8080
+#define DEVICE_NAME "ESP_32_DEV_1"
+#define SEND_INTERVAL 20000 // Send data every 10 seconds
+#define TOKEN "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJkZXZpY2VfaWQiOjEyLCJzdWIiOiJkZXZpY2U6MTI6dXNlcjoyIiwiZXhwIjoxNzc4NzAzMzY1LCJuYmYiOjE3NzAwNjMzNjUsImlhdCI6MTc3MDA2MzM2NX0.s7fXfwTi4uLWjOunvipfJk9XCYx_sVtEXadFJYx8yZQ"
+
 // Wifi Credentials
 
 #if defined(ONEPLUS_AP)

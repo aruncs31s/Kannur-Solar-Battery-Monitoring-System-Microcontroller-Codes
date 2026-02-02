@@ -1,6 +1,8 @@
 /*
+ * SKVMS ESP8266 -
  * Time : 13:31
  * Date : 2024-10-02
+ * Updated: 2026-02-02 - Added Go Backend Integration
  */
 
 #include "config.h"
@@ -17,21 +19,13 @@
 #include "solar_monitor_server.h"
 #include "wifi_configs.h"
 
-// LCD Display
-#if defined(LCD_DSPLAY)
-#include "LiquidCrystal_I2C.h"
-// LCD Display object
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+#if defined(USE_GO_BACKEND)
+#include "go_backend.h"
 #endif
 
-// All the function Definition Will Go here
-
-// Do something about this
-
+// WiFi Server for local web interface
 WiFiServer server(80);
-
 String header;
-// For wifi Server
 
 unsigned long currentTime = millis();
 unsigned long previousTime = 0;
@@ -40,55 +34,66 @@ unsigned long previousTime = 0;
 Data new_data;
 
 String led_relayState = "off";
-// Solar Monitor Server Object
 
+// Solar Monitor Server Object
 SolarMonitorServer Solar_monitor_server;
 
 WiFiConfigs Wifi_configs;
 
 BatteryMonitor Battery_monitor(battery_voltage_pin);
 
-// Reconnect if lost connection
+#if defined(USE_GO_BACKEND)
+// Go Backend Client
+GoBackend backend(BACKEND_HOST, BACKEND_PORT,TOKEN);
+bool backend_initialized = true;
+#endif
 
 void setup() {
-  Serial.begin(9600);
-  // Get static IP
+  Serial.begin(115200);
+  Serial.println("\n\n========== SKVMS ESP8266 Starting ==========");
+
+  // Initialize relay
   new_data.led_relayState = "off";
   Solar_monitor_server.init_relay();
+
 #if defined(STATIC_IP)
   Wifi_configs.get_static_ip();
 #endif
-  Wifi_configs.connect();
-  server.begin();
 
-#if defined(LCD_DSPLAY)
-  // Iniitlize the lcd
-  lcd.init();
-  lcd.clear();
-  lcd.backlight();
-#endif
+  // Connect to WiFi
+  Serial.println("Connecting to WiFi...");
+  Wifi_configs.connect();
+
+  // Wait for WiFi connection
+  int retry_count = 0;
+  while (WiFi.status() != WL_CONNECTED && retry_count < 20) {
+    delay(500);
+    Serial.print(".");
+    retry_count++;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWiFi Connected!");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
+    Serial.print("MAC Address: ");
+    Serial.println(WiFi.macAddress());
+
+    // Start local web server
+    server.begin();
+    Serial.println("Local web server started");
+  } else {
+    Serial.println("\nWiFi connection failed!");
+  }
+
 }
 
 void update_reading() {
   new_data.battery_voltage = Battery_monitor.get_voltage();
 }
 
-void loop() {
-  update_reading();
-#if defined(LCD_DSPLAY)
-  lcd.setCursor(2, 0);
-  lcd.print(WiFi.localIP());
-#endif
-  WiFiClient client = server.available();
-
-#if defined(LCD_DSPLAY)
-  if (new_data.battery_voltage != Battery_monitor.get_voltage()) {
-    lcd.setCursor(2, 1); // Set cursor to character 2 on line 0
-    lcd.print("Volt = ");
-    lcd.print(new_data.battery_voltage);
-    lcd.print(" V");
-  }
-#endif
+void handleClient() {
+  WiFiClient client = server.accept();
 
   if (client) {
     currentTime = millis();
@@ -101,34 +106,26 @@ void loop() {
         char c = client.read();
         Serial.write(c);
         header += c;
+
         if (c == '\n') {
           if (currentLine.length() == 0) {
-            if (header.indexOf("GET /data") >= 0 ||
-                header.indexOf("GET /data/?=") >= 0) {
-#if defined(DEBUG_EVERYTHING)
-              Serial.println("Serving Json Response");
-#endif
+            // HTTP response
+            if (header.indexOf("GET /data") >= 0) {
+              // Return JSON data
               Solar_monitor_server.update_json_response(client, new_data);
-
-              if (header.indexOf("GET /data?=on") >= 0) {
-                Serial.println("GPIO D4 on");
-                // header = "GET /data";
-                // digitalWrite(LED_BUILTIN, HIGH);
-                Solar_monitor_server.turn_on_off_relay(0);
-              } else if (header.indexOf("GET /data?=off") >= 0) {
-                Serial.println("GPIO D4 off");
-                // header = "GET /data";
-                // digitalWrite(LED_BUILTIN, LOW);
-                Solar_monitor_server.turn_on_off_relay(1);
-              }
-              break;
-            } else {
-#if defined(DEBUG_EVERYTHING)
-              Serial.println("Serving HTML");
-#endif
+            } else if (header.indexOf("GET /on") >= 0) {
+              new_data.led_relayState = "on";
+              Solar_monitor_server.turn_on_off_relay(true);
               Solar_monitor_server.present_website(client, new_data);
-              break;
+            } else if (header.indexOf("GET /off") >= 0) {
+              new_data.led_relayState = "off";
+              Solar_monitor_server.turn_on_off_relay(false);
+              Solar_monitor_server.present_website(client, new_data);
+            } else {
+              // Default homepage
+              Solar_monitor_server.present_website(client, new_data);
             }
+            break;
           } else {
             currentLine = "";
           }
@@ -137,11 +134,36 @@ void loop() {
         }
       }
     }
+
     header = "";
     client.stop();
-#if defined(DEBUG_EVERYTHING)
-    Serial.println("Client disconnected.");
-#endif
+    Serial.println("Client disconnected.\n");
   }
-  delay(100);
+}
+
+void loop() {
+  update_reading();
+
+#if defined(USE_GO_BACKEND)
+  // Send data to backend at configured intervals
+  if (backend_initialized ) { //&& backend.shouldSendData()
+    Serial.println("\n--- Sending to Backend ---");
+    Serial.print("Voltage: ");
+    Serial.print(new_data.battery_voltage);
+    Serial.println(" V");
+
+    if (backend.sendReading(new_data.battery_voltage, 0.0)) {
+      Serial.println("✓ Data sent successfully!");
+    } else {
+      Serial.println("✗ Failed to send data!");
+    }
+    Serial.println();
+  } else {
+    Serial.println("Initializing Backend  ...");
+  }
+#endif
+  delay(SEND_INTERVAL);
+
+  // Handle local web server requests
+  // handleClient();
 }

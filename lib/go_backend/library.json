@@ -1,0 +1,14 @@
+{
+  "name": "go_backend",
+  "version": "1.0.0",
+  "description": "ESP8266/ESP32 library for connecting to Go SKVMS backend server",
+  "keywords": "http, backend, iot, esp8266, esp32, monitoring",
+  "authors": {
+    "name": "SKVMS Team"
+  },
+  "dependencies": {
+    "bblanchon/ArduinoJson": "^6.21.3"
+  },
+  "frameworks": "arduino",
+  "platforms": ["espressif8266", "espressif32"]
+}
