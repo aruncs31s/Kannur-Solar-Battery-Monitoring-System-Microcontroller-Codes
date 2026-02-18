@@ -23,6 +23,10 @@
 #include "go_backend.h"
 #endif
 
+#if defined(USE_OTA)
+#include <ArduinoOTA.h>
+#endif
+
 // WiFi Server for local web interface
 WiFiServer server(80);
 String header;
@@ -86,6 +90,59 @@ void setup() {
     Serial.println("\nWiFi connection failed!");
   }
 
+#if defined(USE_OTA)
+  // Initialize OTA
+  Serial.println("\n--- Initializing OTA ---");
+  ArduinoOTA.setPort(OTA_PORT);
+  ArduinoOTA.setHostname(OTA_HOSTNAME);
+  
+#if defined(OTA_PASSWORD)
+  ArduinoOTA.setPassword(OTA_PASSWORD);
+  Serial.println("OTA Password: Enabled");
+#endif
+
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else { // U_FS
+      type = "filesystem";
+    }
+    Serial.println("\n[OTA] Start updating " + type);
+  });
+  
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\n[OTA] Update complete!");
+  });
+  
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("[OTA] Progress: %u%%\r", (progress / (total / 100)));
+  });
+  
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("[OTA] Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
+  });
+  
+  ArduinoOTA.begin();
+  Serial.println("OTA Ready!");
+  Serial.print("Hostname: ");
+  Serial.println(OTA_HOSTNAME);
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+#endif
+  
+  Serial.println("========== Setup Complete ==========\n");
 }
 
 void update_reading() {
@@ -142,6 +199,11 @@ void handleClient() {
 }
 
 void loop() {
+#if defined(USE_OTA)
+  // Handle OTA updates
+  ArduinoOTA.handle();
+#endif
+
   update_reading();
 
 #if defined(USE_GO_BACKEND)

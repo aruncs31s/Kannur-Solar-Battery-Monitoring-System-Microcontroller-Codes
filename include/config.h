@@ -15,6 +15,12 @@
 // #define WIND_DIRECTION_SENSING
 // #define WIND_SPEED_SENSING
 
+// OTA Configuration
+#define USE_OTA
+#define OTA_HOSTNAME "SKVMS_ESP8266"  // Name that will appear in Arduino IDE
+#define OTA_PASSWORD "admin123"         // Password for OTA updates (optional but recommended)
+#define OTA_PORT 8266                    // Default OTA port
+
 // Go Backend Configuration
 #define USE_GO_BACKEND
 #define BACKEND_HOST "10.71.76.103"
