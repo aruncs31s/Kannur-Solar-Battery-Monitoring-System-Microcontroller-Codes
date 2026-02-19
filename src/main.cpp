@@ -6,7 +6,7 @@
  */
 
 #include "config.h"
-
+#include "initializer.h"
 #if defined(ESP8266)
 // Wifi.h will not work for ESP8266
 #include <ESP8266WiFi.h>
@@ -22,6 +22,10 @@
 #if defined(USE_GO_BACKEND)
 #include "go_backend.h"
 #endif
+
+
+// For Setup Wizard
+#include <LiquidCrystal_I2C.h>
 
 // WiFi Server for local web interface
 WiFiServer server(80);
@@ -48,9 +52,12 @@ GoBackend backend(BACKEND_HOST, BACKEND_PORT,TOKEN);
 bool backend_initialized = true;
 #endif
 
+extern LiquidCrystal_I2C lcd;
+extern void setup_lcd();
+
 void setup() {
-  Serial.begin(115200);
-  Serial.println("\n\n========== SKVMS ESP8266 Starting ==========");
+  init_serial();
+  setup_lcd();
 
   // Initialize relay
   new_data.led_relayState = "off";
@@ -60,30 +67,36 @@ void setup() {
   Wifi_configs.get_static_ip();
 #endif
 
-  // Connect to WiFi
-  Serial.println("Connecting to WiFi...");
+ 
   Wifi_configs.connect();
 
   // Wait for WiFi connection
   int retry_count = 0;
-  while (WiFi.status() != WL_CONNECTED && retry_count < 20) {
+  while (WiFi.status() != WL_CONNECTED && retry_count < RETRY_COUNT) {
     delay(500);
     Serial.print(".");
     retry_count++;
   }
 
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\nWiFi Connected!");
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
-    Serial.print("MAC Address: ");
-    Serial.println(WiFi.macAddress());
 
+  if (WiFi.status() == WL_CONNECTED) {
+
+#if defined(DEBUG)
+     Serial.println("\nWiFi connected successfully!");
+     Serial.print("IP Address: ");
+     Serial.println(WiFi.localIP());
+      Serial.print("MAC Address: ");
+      Serial.println(WiFi.macAddress());
+#endif
     // Start local web server
     server.begin();
+#if defined(DEBUG)
     Serial.println("Local web server started");
+#endif
   } else {
+#if defined(DEBUG)
     Serial.println("\nWiFi connection failed!");
+#endif
   }
 
 }

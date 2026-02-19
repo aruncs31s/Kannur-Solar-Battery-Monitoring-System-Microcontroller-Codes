@@ -7,23 +7,31 @@
 #else
 #error "No WiFi header file found"
 #endif
-void WiFiConfigs::connect() {
+void WiFiConfigs::connect()
+{
+#if defined(DEBUG)
+  // Connect to WiFi
+  Serial.println("Connecting to WiFi...");
+#endif
   const char *ssid = WIFI_SSID;
   const char *password = WIFI_PASSWORD;
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
-#if defined(DEBUG_EVERYTHING)
+#if defined(DEBUG)
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 #endif
 }
 
-void WiFiConfigs::reconnect() {
-  while ((WiFi.status()) != WL_CONNECTED) {
+void WiFiConfigs::reconnect()
+{
+  while ((WiFi.status()) != WL_CONNECTED)
+  {
     Serial.println("Reconnecting .");
     WiFi.disconnect();
     WiFi.reconnect();
@@ -32,7 +40,8 @@ void WiFiConfigs::reconnect() {
 }
 
 #if defined(STATIC_IP)
-void WiFiConfigs::get_static_ip() {
+void WiFiConfigs::get_static_ip()
+{
   IPAddress local_IP(STATIC_IP_ADDRESS);
   IPAddress gateway(STATIC_IP_GATEWAY);
   IPAddress subnet(STATIC_IP_SUBNET);

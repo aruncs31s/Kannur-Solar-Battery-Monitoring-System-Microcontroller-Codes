@@ -1,6 +1,7 @@
 #include "solar_monitor_server.h"
 #include "config.h"
 #include "pins_arduino.h"
+#include "Arduino.h"
 
 void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
   client.println("HTTP/1.1 200 OK");
@@ -152,6 +153,7 @@ void SolarMonitorServer::update_json_response(
 
 void SolarMonitorServer::turn_on_off_relay(bool _state) {
   digitalWrite(_led_relayPin, _state);
-  digitalWrite(LED_BUILTIN, _state);
+//   digitalWrite(LED_BUILTIN, _state);
 }
 void SolarMonitorServer::init_relay() { pinMode(_led_relayPin, OUTPUT); }
+

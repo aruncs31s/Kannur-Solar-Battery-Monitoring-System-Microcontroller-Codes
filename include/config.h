@@ -3,13 +3,17 @@
 #include <Arduino.h>
 #include <cstdint>
 
+#define RETRY_COUNT 59999
+
+#define DEBUG
+
+
 // Here every features should be defined
 
 #define ONEPLUS_AP
 // #define LIGHT_SENSING
 // #define HUMID_TEMP_SENSING
 // #define STATIC_IP
-#define DEBUG_EVERYTHING
 // #define LCD_DSPLAY
 // #define RAIN_SENSING
 // #define WIND_DIRECTION_SENSING
@@ -91,6 +95,8 @@ const uint8_t battery_voltage_pin = 36;
 const int PIN_WIND_DIRECTION = 32;
 const int PIN_WIND_SPEED = 34;
 const int PIN_RAINFALL = 35;
+
+#define BAUD_RATE 115200
 
 #if defined(ESP8266)
 #define ADC_MAX 1023
