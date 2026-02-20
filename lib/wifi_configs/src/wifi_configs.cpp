@@ -7,6 +7,7 @@
 #else
 #error "No WiFi header file found"
 #endif
+
 void WiFiConfigs::connect()
 {
 #if defined(DEBUG)
@@ -21,6 +22,7 @@ void WiFiConfigs::connect()
     delay(500);
     Serial.print(".");
   }
+  this->wifi_status = WIFI_CONNECTED;
 #if defined(DEBUG)
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
@@ -37,6 +39,7 @@ void WiFiConfigs::reconnect()
     WiFi.reconnect();
     delay(5000);
   }
+  this->wifi_status = WIFI_CONNECTED;
 }
 
 #if defined(STATIC_IP)

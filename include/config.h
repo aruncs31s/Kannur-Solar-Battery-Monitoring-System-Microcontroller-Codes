@@ -21,7 +21,7 @@
 
 // Go Backend Configuration
 #define USE_GO_BACKEND
-#define BACKEND_HOST "10.71.76.103"
+#define BACKEND_HOST "10.210.26.103"
 #define BACKEND_PORT 8080
 #define DEVICE_NAME "ESP_32_DEV_1"
 #define SEND_INTERVAL 20000 // Send data every 10 seconds

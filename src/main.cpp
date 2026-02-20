@@ -18,26 +18,19 @@
 #include "battery_monitor.h"
 #include "solar_monitor_server.h"
 #include "wifi_configs.h"
+#include "handlers.h"
 
 #if defined(USE_GO_BACKEND)
 #include "go_backend.h"
 #endif
 
-
 // For Setup Wizard
 #include <LiquidCrystal_I2C.h>
-
-// WiFi Server for local web interface
-WiFiServer server(80);
-String header;
-
-unsigned long currentTime = millis();
-unsigned long previousTime = 0;
 
 // Data struct
 Data new_data;
 
-String led_relayState = "off";
+bool led_relayState = false;
 
 // Solar Monitor Server Object
 SolarMonitorServer Solar_monitor_server;
@@ -46,137 +39,135 @@ WiFiConfigs Wifi_configs;
 
 BatteryMonitor Battery_monitor(battery_voltage_pin);
 
+// Handler object that creates and manages the server
+// NOTE: Initialized in setup() after WiFi is connected, not as global
+Handlers* handlers = nullptr;
+
 #if defined(USE_GO_BACKEND)
 // Go Backend Client
-GoBackend backend(BACKEND_HOST, BACKEND_PORT,TOKEN);
+GoBackend backend(
+    BACKEND_HOST,
+    BACKEND_PORT,
+    TOKEN);
 bool backend_initialized = true;
+
 #endif
 
 extern LiquidCrystal_I2C lcd;
+extern bool lcd_initialized;
 extern void setup_lcd();
 
-void setup() {
+void setup()
+{
   init_serial();
   setup_lcd();
 
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Initializing...");
   // Initialize relay
-  new_data.led_relayState = "off";
+  led_relayState = false;
   Solar_monitor_server.init_relay();
 
 #if defined(STATIC_IP)
   Wifi_configs.get_static_ip();
 #endif
 
- 
   Wifi_configs.connect();
 
   // Wait for WiFi connection
   int retry_count = 0;
-  while (WiFi.status() != WL_CONNECTED && retry_count < RETRY_COUNT) {
+  while (WiFi.status() != WL_CONNECTED && retry_count < RETRY_COUNT)
+  {
     delay(500);
     Serial.print(".");
     retry_count++;
   }
-
-
-  if (WiFi.status() == WL_CONNECTED) {
-
 #if defined(DEBUG)
-     Serial.println("\nWiFi connected successfully!");
-     Serial.print("IP Address: ");
-     Serial.println(WiFi.localIP());
-      Serial.print("MAC Address: ");
-      Serial.println(WiFi.macAddress());
-#endif
-    // Start local web server
-    server.begin();
-#if defined(DEBUG)
-    Serial.println("Local web server started");
-#endif
-  } else {
-#if defined(DEBUG)
-    Serial.println("\nWiFi connection failed!");
-#endif
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    Serial.println("\nWiFi connected successfully!");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
+    Serial.print("MAC Address: ");
+    Serial.println(WiFi.macAddress());
   }
+#endif
 
+  // Initialize the HTTP server AFTER WiFi is connected
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    handlers = new Handlers();
+  }
 }
 
-void update_reading() {
+void update_reading()
+{
   new_data.battery_voltage = Battery_monitor.get_voltage();
 }
 
-void handleClient() {
-  WiFiClient client = server.accept();
-
-  if (client) {
-    currentTime = millis();
-    previousTime = currentTime;
-    Serial.println("New Client.");
-    String currentLine = "";
-    while (client.connected() && currentTime - previousTime <= TIMEOUT_MS) {
-      currentTime = millis();
-      if (client.available()) {
-        char c = client.read();
-        Serial.write(c);
-        header += c;
-
-        if (c == '\n') {
-          if (currentLine.length() == 0) {
-            // HTTP response
-            if (header.indexOf("GET /data") >= 0) {
-              // Return JSON data
-              Solar_monitor_server.update_json_response(client, new_data);
-            } else if (header.indexOf("GET /on") >= 0) {
-              new_data.led_relayState = "on";
-              Solar_monitor_server.turn_on_off_relay(true);
-              Solar_monitor_server.present_website(client, new_data);
-            } else if (header.indexOf("GET /off") >= 0) {
-              new_data.led_relayState = "off";
-              Solar_monitor_server.turn_on_off_relay(false);
-              Solar_monitor_server.present_website(client, new_data);
-            } else {
-              // Default homepage
-              Solar_monitor_server.present_website(client, new_data);
-            }
-            break;
-          } else {
-            currentLine = "";
-          }
-        } else if (c != '\r') {
-          currentLine += c;
-        }
-      }
-    }
-
-    header = "";
-    client.stop();
-    Serial.println("Client disconnected.\n");
-  }
-}
-
-void loop() {
+void loop()
+{
   update_reading();
+
+  // Handle local web server requests
+  if (handlers != nullptr && WiFi.status() == WL_CONNECTED)
+  {
+    handlers->handleClient();
+  }
 
 #if defined(USE_GO_BACKEND)
   // Send data to backend at configured intervals
-  if (backend_initialized ) { //&& backend.shouldSendData()
+  if (backend_initialized)
+  {
+#if defined(DEBUG)
     Serial.println("\n--- Sending to Backend ---");
     Serial.print("Voltage: ");
     Serial.print(new_data.battery_voltage);
     Serial.println(" V");
-
-    if (backend.sendReading(new_data.battery_voltage, 0.0)) {
-      Serial.println("✓ Data sent successfully!");
-    } else {
-      Serial.println("✗ Failed to send data!");
+#endif
+    if (lcd_initialized)
+    {
+      lcd.setCursor(0, 1);
+      lcd.print("Sent to Backend!   ");
     }
+
+    if (backend.sendReading(new_data.battery_voltage, 0.0))
+    {
+      if (lcd_initialized)
+      {
+        lcd.setCursor(0, 1);
+        lcd.print("Data Sent!         ");
+      }
+#if defined(DEBUG)
+      Serial.println("✓ Data sent successfully!");
+#endif
+    }
+    else
+    {
+      if (lcd_initialized)
+      {
+        lcd.setCursor(0, 1);
+        lcd.print("Failed to send!    ");
+      }
+#if defined(DEBUG)
+      Serial.println("✗ Failed to send data!");
+#endif
+    }
+
     Serial.println();
-  } else {
+  }
+  else
+  {
+    if (lcd_initialized)
+    {
+      lcd.setCursor(0, 1);
+      lcd.print("Backend Init Failed");
+    }
+    #if defined(DEBUG)
     Serial.println("Initializing Backend  ...");
+    #endif
   }
 #endif
   delay(SEND_INTERVAL);
-
-  // Handle local web server requests
-  // handleClient();
 }
