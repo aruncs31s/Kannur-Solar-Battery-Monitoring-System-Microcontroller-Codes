@@ -1,5 +1,4 @@
 #include "go_backend.h"
-
 GoBackend::GoBackend(const char *serverHost, uint16_t serverPort)
     : _serverHost(serverHost),
       _serverPort(serverPort),
@@ -9,7 +8,7 @@ GoBackend::GoBackend(const char *serverHost, uint16_t serverPort)
 {
 }
 
-GoBackend::GoBackend(const char *serverHost, uint16_t serverPort,const char* authToken)
+GoBackend::GoBackend(const char *serverHost, uint16_t serverPort, const char *authToken)
     : _serverHost(serverHost),
       _serverPort(serverPort),
       _deviceToken(authToken),
@@ -19,14 +18,10 @@ GoBackend::GoBackend(const char *serverHost, uint16_t serverPort,const char* aut
 {
 }
 
-
-
 bool GoBackend::sendReading(float voltage, float current)
 {
-
   if (_deviceToken.length() == 0)
   {
-    Serial.println("[GoBackend] Device token not set! Call getDeviceAuthToken() first.");
     return false;
   }
 
@@ -37,10 +32,6 @@ bool GoBackend::sendReading(float voltage, float current)
 
   String jsonPayload;
   serializeJson(doc, jsonPayload);
-
-  Serial.println("[GoBackend] Sending reading...");
-  Serial.print("[GoBackend] Payload: ");
-  Serial.println(jsonPayload);
 
   HTTPClient http;
   String url = buildURL("/api/readings");
@@ -56,16 +47,8 @@ bool GoBackend::sendReading(float voltage, float current)
 
   if (responseCode == 201 || responseCode == 200)
   {
-    Serial.println("[GoBackend] Reading sent successfully!");
     _lastSendTime = millis();
     return true;
-  }
-  else
-  {
-    Serial.print("[GoBackend] Failed to send reading! HTTP Code: ");
-    Serial.println(responseCode);
-    Serial.print("[GoBackend] Response: ");
-    Serial.println(response);
   }
 
   return false;
@@ -102,16 +85,12 @@ bool GoBackend::shouldSendData()
 void GoBackend::setSendInterval(unsigned long intervalMs)
 {
   _sendInterval = intervalMs;
-  Serial.print("[GoBackend] Send interval set to: ");
-  Serial.print(_sendInterval / 1000);
-  Serial.println(" seconds");
 }
 
 uint8_t GoBackend::getDeviceState()
 {
   if (_deviceID == 0)
   {
-    Serial.println("[GoBackend] Device not registered!");
     return 0;
   }
 
@@ -137,7 +116,6 @@ bool GoBackend::updateDeviceState(uint8_t stateId)
 {
   if (_deviceID == 0)
   {
-    Serial.println("[GoBackend] Device not registered!");
     return false;
   }
 
@@ -164,7 +142,6 @@ uint32_t GoBackend::getDeviceID()
   return _deviceID;
 }
 
-
 String GoBackend::getDeviceToken()
 {
   return _deviceToken;
@@ -174,7 +151,6 @@ bool GoBackend::getDeviceAuthToken(uint32_t userID)
 {
   if (_deviceID == 0)
   {
-    Serial.println("[GoBackend] Device not registered!");
     return false;
   }
 
@@ -184,8 +160,6 @@ bool GoBackend::getDeviceAuthToken(uint32_t userID)
 
   String jsonPayload;
   serializeJson(doc, jsonPayload);
-
-  Serial.println("[GoBackend] Requesting device auth token...");
 
   int responseCode;
   String response = makePostRequest("/api/device-auth/token", jsonPayload, responseCode);

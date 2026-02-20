@@ -30,21 +30,22 @@ void Handlers::handleClient() {
 
         if (c == '\n') {
           if (currentLine.length() == 0) {
+            Data current_data = readingsRepo.getAllReadings();
             // HTTP response
             if (_header.indexOf("GET /data") >= 0) {
               // Return JSON data
-              Solar_monitor_server.update_json_response(client, new_data);
+              Solar_monitor_server.update_json_response(client, current_data);
             } else if (_header.indexOf("GET /on") >= 0) {
-              new_data.led_relayState = "on";
+              readingsRepo.updateLedState(LedState::ON);
               Solar_monitor_server.turn_on_off_relay(true);
-              Solar_monitor_server.present_website(client, new_data);
+              Solar_monitor_server.present_website(client, current_data);
             } else if (_header.indexOf("GET /off") >= 0) {
-              new_data.led_relayState = "off";
+              readingsRepo.updateLedState(LedState::OFF);
               Solar_monitor_server.turn_on_off_relay(false);
-              Solar_monitor_server.present_website(client, new_data);
+              Solar_monitor_server.present_website(client, current_data);
             } else {
               // Default homepage
-              Solar_monitor_server.present_website(client, new_data);
+              Solar_monitor_server.present_website(client, current_data);
             }
             break;
           } else {

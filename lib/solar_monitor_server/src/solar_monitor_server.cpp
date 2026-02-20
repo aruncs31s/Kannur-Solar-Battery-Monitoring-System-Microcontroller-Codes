@@ -3,7 +3,7 @@
 #include "pins_arduino.h"
 #include "Arduino.h"
 
-void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
+void SolarMonitorServer::present_website(WiFiClient &client, Data new_data) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-type:text/html");
   client.println("Connection: close");
@@ -135,7 +135,7 @@ void SolarMonitorServer::present_website(WiFiClient &client, Data &new_data) {
 }
 void SolarMonitorServer::update_json_response(
     WiFiClient &client,
-    Data &new_data
+    Data new_data
 ) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: application/json");
@@ -147,7 +147,7 @@ void SolarMonitorServer::update_json_response(
   client.print(new_data.battery_voltage);
   client.print(",");
   client.print("\"led_relayState\":");
-  client.print("\"" + new_data.led_relayState + "\"");
+  client.print("\"" + String(new_data.led_relayState ? "ON" : "OFF") + "\"");
   client.println("}");
 }
 

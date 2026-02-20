@@ -1,10 +1,11 @@
 #include <LiquidCrystal_I2C.h>
 #include <Arduino.h>
+#include "setup_wizard.h"
+
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Set the LCD address to 0x27 for a 16 chars and 2 line display
-
-
 bool lcd_initialized = false;
-bool scan_for_device();
+
+
 void setup_lcd()
 {
     // Does the Wire.begin()

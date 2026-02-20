@@ -1,5 +1,8 @@
 #ifndef __SOLAR_MONITOR_H__
 #define __SOLAR_MONITOR_H__
+
+#include "data.h"
+
 #include <stdbool.h>
 #if defined(ESP32)
 #include <WiFi.h>
@@ -10,8 +13,8 @@
 class SolarMonitorServer {
 public:
   void init_relay();
-  void present_website(WiFiClient &client, Data &new_data);
-  void update_json_response(WiFiClient &client, Data &new_data);
+  void present_website(WiFiClient &client, Data new_data);
+  void update_json_response(WiFiClient &client, Data new_data);
   void turn_on_off_relay(bool _state);
 
 private:

@@ -6,31 +6,19 @@
  */
 
 #include "config.h"
+#include "data.h"
 #include "initializer.h"
-#if defined(ESP8266)
-// Wifi.h will not work for ESP8266
-#include <ESP8266WiFi.h>
-#elif defined(ESP32)
-// For ESP32
-#include <WiFi.h>
-#endif
-
 #include "battery_monitor.h"
 #include "solar_monitor_server.h"
 #include "wifi_configs.h"
 #include "handlers.h"
-
+#include "setup_wizard.h"
 #if defined(USE_GO_BACKEND)
 #include "go_backend.h"
 #endif
 
 // For Setup Wizard
 #include <LiquidCrystal_I2C.h>
-
-// Data struct
-Data new_data;
-
-bool led_relayState = false;
 
 // Solar Monitor Server Object
 SolarMonitorServer Solar_monitor_server;
@@ -57,6 +45,11 @@ extern LiquidCrystal_I2C lcd;
 extern bool lcd_initialized;
 extern void setup_lcd();
 
+// Repo 
+
+ReadingsRepo readingsRepo;
+
+
 void setup()
 {
   init_serial();
@@ -65,8 +58,8 @@ void setup()
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Initializing...");
-  // Initialize relay
-  led_relayState = false;
+
+  readingsRepo.updateLedState(LedState::OFF);
   Solar_monitor_server.init_relay();
 
 #if defined(STATIC_IP)
@@ -103,7 +96,7 @@ void setup()
 
 void update_reading()
 {
-  new_data.battery_voltage = Battery_monitor.get_voltage();
+  readingsRepo.updateVoltage(Battery_monitor.get_voltage());
 }
 
 void loop()
@@ -120,10 +113,11 @@ void loop()
   // Send data to backend at configured intervals
   if (backend_initialized)
   {
+    Data current_data = readingsRepo.getAllReadings();
 #if defined(DEBUG)
     Serial.println("\n--- Sending to Backend ---");
     Serial.print("Voltage: ");
-    Serial.print(new_data.battery_voltage);
+    Serial.print(current_data.battery_voltage);
     Serial.println(" V");
 #endif
     if (lcd_initialized)
@@ -132,7 +126,7 @@ void loop()
       lcd.print("Sent to Backend!   ");
     }
 
-    if (backend.sendReading(new_data.battery_voltage, 0.0))
+    if (backend.sendReading(current_data.battery_voltage, 0.0))
     {
       if (lcd_initialized)
       {

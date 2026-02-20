@@ -1,13 +1,11 @@
 #include "Arduino.h"
-
+#include "data.h"
 // The Server
 
 #include "solar_monitor_server.h"
 
 extern SolarMonitorServer Solar_monitor_server;
-
-// Data struct
-extern Data new_data;
+extern ReadingsRepo readingsRepo;
 
 #if defined(ESP8266)
 // Wifi.h will not work for ESP8266

@@ -56,27 +56,6 @@ const uint8_t led_relayPin = D2;
 const uint8_t led_relayPin = 4;
 #endif
 
-typedef struct Data {
-#if defined(LIGHT_SENSING)
-  float light_sensor_value;
-#endif
-#if defined(HUMID_TEMP_SENSING)
-  float humidity;
-  float temperature;
-#endif
-  float battery_voltage;
-#if defined(RAIN_SENSING)
-  float rain_volume;
-#endif
-#if defined(WIND_SPEED_SENSING)
-  float wind_speed;
-#endif
-#if defined(WIND_DIRECTION_SENSING)
-  float wind_direction;
-#endif
-  String led_relayState;
-} Data;
-
 // For web Server
 
 #define TIMEOUT_MS 2000

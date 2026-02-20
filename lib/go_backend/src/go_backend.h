@@ -1,5 +1,6 @@
 #ifndef __GO_BACKEND_H__
 #define __GO_BACKEND_H__
+#include "data.h"
 
 #if defined(ESP32)
 #include <WiFi.h>
